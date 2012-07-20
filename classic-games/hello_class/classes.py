@@ -7,7 +7,9 @@ CHR_ENEMY = "B"
 CHR_WIZARD = "W"
 CHR_ARCHER = "A"
 CHR_DEAD = "X"
-
+BLUDGEON = 0
+PIERCE = 1
+SLASH = 2
 class StatusBar(object):
     def __init__(self, character = None):
         self.character = character
@@ -286,3 +288,45 @@ class Archer(Character):
         dist = self.distance(enemy)
         if (dist[0] <= 5 and dist[1] == 0) or (dist[0] == 0 and dist[1] <= 5):
             enemy.harm(5)
+
+class Item(Entity):
+    def __init__(self,x,y,image,weight,state):
+        Entity.__init__(self,x,y,image)
+        conditions["broken", "horrible", "miserable", "shabby", "poor",\
+                   "decent", "good", "excellent", "awesome", "super-fantastic"]
+        self.weight = weight
+        self.state = state
+
+    def inspect(self):
+        statusbar.set_status("Quack. " + "Item weighs about " + str(self.getweight) +
+                             ", and is in " + conditions[self.state] + " condition.")
+
+    def getweight(self):
+        unit = "g"
+        if (self.weight >= 1000):
+            return str(self.weight / 1000.00) + "kg"
+        return str(self.weight) + "g"
+
+class Weapon(Item):
+    def __init__(self,x,y,image,weight,state,type):
+        Item.__init__(self,x,y,image,weight,state)
+        weapon_types["bludgeoning","piercing","slashing"]
+        conditions["broken", "horrible", "miserable", "shabby", "poor",\
+              "decent", "good", "excellent", "awesome", "super-fantastic"]
+        self.cause_bleed = type # Using type-index as multiplier for bleeding
+        if (type < 0) or (type > 2): # Everything can be a weapon, defaults to bludgeon
+            type = 0
+        self.weapon_type = weapon_types[type]
+
+    def inspect(self):
+        statusbar.set_status("This is a " + self.weapon_type + 
+                             " weapon, in " + conditions[self.state] + " condition.")
+
+class Longsword(Weapon):
+    def __init__(self,x,y,image,weight,state,type):
+        Weapon.__init__(self,x,y,image,weight,state,SLASH)
+
+    def sharpen(self):
+        if self.state < 10:
+            self.state = self.state + 1
+        statusbar.set_status("Sharpness increases to," + str(self.state))
